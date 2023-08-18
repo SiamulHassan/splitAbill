@@ -37,6 +37,16 @@ function App() {
     );
     setShowFrnd(false);
   };
+  const handleSplitBill = (value) => {
+    setAddToFrndList((prevFrnd) =>
+      prevFrnd.map((frnd) =>
+        frnd.id === selectFrnd.id
+          ? { ...frnd, balance: frnd.balance + value }
+          : frnd
+      )
+    );
+    setSelectedFrnd(null);
+  };
   return (
     <div className="app">
       <div className="sidebar">
@@ -50,7 +60,9 @@ function App() {
           {showFrnd ? "Close" : "Add Friend"}
         </Button>
       </div>
-      {selectFrnd && <FormSplitBill selectFrnd={selectFrnd} />}
+      {selectFrnd && (
+        <FormSplitBill selectFrnd={selectFrnd} onSplitBill={handleSplitBill} />
+      )}
     </div>
   );
 }
@@ -145,13 +157,18 @@ function FormAddFrnd({ onAddFrnd }) {
   );
 }
 
-function FormSplitBill({ selectFrnd }) {
+function FormSplitBill({ selectFrnd, onSplitBill }) {
   const [bill, setBill] = useState("");
   // paid by user ==> you--me(my expense); clark-->user(clark's expense)
   const [paidByUser, setPaidByUser] = useState("");
   // bill prothome '' tai bill &&
   const paidByFrnd = bill && bill - paidByUser;
   const [whoIsPaying, setWhoIsPaying] = useState("user");
+  const handleSplitBill = (e) => {
+    e.preventDefault();
+    if (!bill || !paidByUser) return;
+    onSplitBill(whoIsPaying === "user" ? paidByFrnd : -paidByUser);
+  };
   return (
     <form className="form-split-bill">
       <h2>Split a bill with {selectFrnd.name}</h2>
@@ -183,7 +200,7 @@ function FormSplitBill({ selectFrnd }) {
         <option value="user">You</option>
         <option value="friend">{selectFrnd.name}</option>
       </select>
-      <Button>Split Bill</Button>
+      <Button onClicked={(e) => handleSplitBill(e)}>Split Bill</Button>
     </form>
   );
 }
